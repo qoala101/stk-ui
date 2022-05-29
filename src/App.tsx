@@ -1,38 +1,39 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import * as React from "react";
+import MainChart from "./charts/MainChart";
+import getPublicUrlFromAws from "./aws/Aws"
 
-type AppState = {
-  public_url: string;
+type State = {
+  public_url?: string;
 };
 
-class App extends React.Component<{}, AppState> {
-  state: AppState = {
-    public_url: ""
+class App extends React.Component<{}, State> {
+  state: State = {
+    public_url: undefined
   }
 
   componentDidMount() {
-    this.setState({ public_url: "asd" });
+    var that = this
+    getPublicUrlFromAws(function (public_url?: string) {
+      that.onGetPublicUrlFromAws(public_url)
+    });
+  }
+
+  onGetPublicUrlFromAws(public_url?: string) {
+    this.setState({ public_url: public_url });
   }
 
   render() {
+    if (this.state.public_url) {
+      return (
+        <div>
+          <MainChart />
+        </div>
+      );
+    }
+
     return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>
-            Edit1 <code>src/App.tsx</code> and save to reload.
-          </p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-          <p>{this.state.public_url}</p>
-        </header>
+      <div>
+        Cannot get public URL
       </div>
     );
   }

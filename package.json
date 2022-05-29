@@ -11,13 +11,16 @@
     "@types/node": "latest",
     "@types/react": "latest",
     "@types/react-dom": "latest",
+    "aws-sdk": "latest",
     "gh-pages": "latest",
+    "highcharts": "latest",
+    "highcharts-react-official": "latest",
     "react": "latest",
     "react-dom": "latest",
     "react-scripts": "latest",
     "typescript": "latest",
     "web-vitals": "latest",
-    "recharts": "latest"
+    "util": "latest"
   },
   "scripts": {
     "predeploy": "npm run build",
