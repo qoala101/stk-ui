@@ -3,8 +3,9 @@ import * as Aws from "aws-sdk";
 function getPublicUrlFromAws(handler: (public_url?: string) => void) {
   Aws.config.update({
     region: "us-east-1",
-    accessKeyId: "AKIAW3MLMEQXHMFPC653",
-    secretAccessKey: "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"
+    credentials: new Aws.CognitoIdentityCredentials({
+      IdentityPoolId: 'us-east-1:cc663982-9543-4d54-b7bb-373f2f66750a',
+    })
   });
 
   var dynamoDb = new Aws.DynamoDB();
