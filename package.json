@@ -20,7 +20,9 @@
     "react-scripts": "latest",
     "typescript": "latest",
     "web-vitals": "latest",
-    "util": "latest"
+    "util": "latest",
+    "@ant-design/icons": "latest",
+    "antd": "latest"
   },
   "scripts": {
     "predeploy": "npm run build",
