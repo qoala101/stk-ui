@@ -1,10 +1,13 @@
 {
   "files": {
-    "main.js": "/stonks_ui/static/js/main.357c0088.js",
+    "main.css": "/stonks_ui/static/css/main.f38265ef.css",
+    "main.js": "/stonks_ui/static/js/main.2da6e10f.js",
     "index.html": "/stonks_ui/index.html",
-    "main.357c0088.js.map": "/stonks_ui/static/js/main.357c0088.js.map"
+    "main.f38265ef.css.map": "/stonks_ui/static/css/main.f38265ef.css.map",
+    "main.2da6e10f.js.map": "/stonks_ui/static/js/main.2da6e10f.js.map"
   },
   "entrypoints": [
-    "static/js/main.357c0088.js"
+    "static/css/main.f38265ef.css",
+    "static/js/main.2da6e10f.js"
   ]
 }
