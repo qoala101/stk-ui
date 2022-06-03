@@ -1,47 +1,41 @@
 import React from "react";
+
 import Highcharts from "highcharts/highstock";
 import HighchartsReact from "highcharts-react-official";
-import PriceTick from "../Types";
+import Theme from "highcharts/themes/dark-green";
+
+import {PriceTick} from "../Types";
+import {BalanceTick} from "../Types";
+
+Theme(Highcharts);
 
 type Props = {
   price_ticks: PriceTick[];
+  balance_ticks: BalanceTick[];
 };
 
 class MainChart extends React.Component<Props> {
   render() {
     let options: Highcharts.Options = {
-      rangeSelector: {
-        selected: 4,
-      },
-      yAxis: {
-        labels: {
-          formatter: function () {
-            return (this.value > 0 ? " + " : "") + this.value + "%";
-          },
+      yAxis: [
+        {
+          title: { text: "Price" },
+          height: "60%",
         },
-        plotLines: [
-          {
-            value: 0,
-            width: 2,
-            color: "silver",
-          },
-        ],
-      },
-      plotOptions: {
-        series: {
-          compare: "percent",
-          showInNavigator: true,
+        {
+          title: { text: "Balance" },
+          top: "65%",
+          height: "35%",
+          offset: 0,
         },
-      },
+      ],
       tooltip: {
-        pointFormat:
-          '<span style="color:{series.color}">{series.name}</span>: <b>{point.y}</b> ({point.change}%)<br/>',
-        valueDecimals: 2,
-        split: true,
+        valueDecimals: 5,
       },
       series: [
         {
           type: "line",
+          name: "Buy Price",
           data: this.props.price_ticks.map((item: PriceTick) => [
             item.time,
             item.buy_price,
@@ -49,10 +43,29 @@ class MainChart extends React.Component<Props> {
         },
         {
           type: "line",
+          name: "Sell Price",
           data: this.props.price_ticks.map((item: PriceTick) => [
             item.time,
             item.sell_price,
           ]),
+        },
+        {
+          type: "line",
+          name: "Base Balance",
+          data: this.props.balance_ticks.map((item: BalanceTick) => [
+            item.time,
+            0,
+          ]),
+          yAxis: 1,
+        },
+        {
+          type: "line",
+          name: "Quote Balance",
+          data: this.props.balance_ticks.map((item: BalanceTick) => [
+            item.time,
+            item.quote_balance,
+          ]),
+          yAxis: 1,
         },
       ],
     };
