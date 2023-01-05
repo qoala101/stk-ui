@@ -4,19 +4,43 @@ import Highcharts from "highcharts/highstock";
 import HighchartsReact from "highcharts-react-official";
 import Theme from "highcharts/themes/dark-green";
 
-import {PriceTick} from "../Types";
-import {BalanceTick} from "../Types";
+import { PriceRecord } from "../Types";
+import { BalanceRecord } from "../Types";
 
 Theme(Highcharts);
 
 type Props = {
-  price_ticks: PriceTick[];
-  balance_ticks: BalanceTick[];
+  price_records: PriceRecord[];
+  balance_records: BalanceRecord[];
 };
 
 class MainChart extends React.Component<Props> {
   render() {
     let options: Highcharts.Options = {
+      exporting: {
+        enabled: false,
+      },
+
+      rangeSelector: {
+        buttons: [
+          {
+            count: 10,
+            type: "minute",
+            text: "10M",
+          },
+          {
+            count: 30,
+            type: "minute",
+            text: "30M",
+          },
+          {
+            type: "all",
+            text: "All",
+          },
+        ],
+        selected: 2,
+      },
+
       yAxis: [
         {
           title: { text: "Price" },
@@ -29,14 +53,16 @@ class MainChart extends React.Component<Props> {
           offset: 0,
         },
       ],
+
       tooltip: {
         valueDecimals: 5,
       },
+
       series: [
         {
           type: "line",
           name: "Buy Price",
-          data: this.props.price_ticks.map((item: PriceTick) => [
+          data: this.props.price_records.map((item: PriceRecord) => [
             item.time,
             item.buy_price,
           ]),
@@ -44,7 +70,7 @@ class MainChart extends React.Component<Props> {
         {
           type: "line",
           name: "Sell Price",
-          data: this.props.price_ticks.map((item: PriceTick) => [
+          data: this.props.price_records.map((item: PriceRecord) => [
             item.time,
             item.sell_price,
           ]),
@@ -52,7 +78,7 @@ class MainChart extends React.Component<Props> {
         {
           type: "line",
           name: "Base Balance",
-          data: this.props.balance_ticks.map((item: BalanceTick) => [
+          data: this.props.balance_records.map((item: BalanceRecord) => [
             item.time,
             0,
           ]),
@@ -61,7 +87,7 @@ class MainChart extends React.Component<Props> {
         {
           type: "line",
           name: "Quote Balance",
-          data: this.props.balance_ticks.map((item: BalanceTick) => [
+          data: this.props.balance_records.map((item: BalanceRecord) => [
             item.time,
             item.quote_balance,
           ]),

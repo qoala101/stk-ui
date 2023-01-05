@@ -1,11 +1,11 @@
-export type PriceTick = {
+export type PriceRecord = {
   symbol: string;
   time: number;
   buy_price: number;
   sell_price: number;
 };
 
-export type BalanceTick = {
+export type BalanceRecord = {
   symbol: string;
   time: number;
   base_balance: number;

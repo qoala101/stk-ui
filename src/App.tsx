@@ -4,94 +4,70 @@ import { Layout, Select, Row, Col, Button } from "antd";
 import { Header, Content, Footer } from "antd/lib/layout/layout";
 
 import getPublicUrlFromAws from "./aws/Aws";
-import { PriceTick } from "./Types";
-import { BalanceTick } from "./Types";
+import { PriceRecord } from "./Types";
+import { BalanceRecord } from "./Types";
 import MainChart from "./charts/MainChart";
 
 import "antd/dist/antd.dark.min.css";
 
 type State = {
-  public_url?: string;
+  public_url: string;
   symbols: string[];
-  strategies: string[];
-  price_ticks: PriceTick[];
-  balance_ticks: BalanceTick[];
+  price_records: PriceRecord[];
+  balance_records: BalanceRecord[];
 
   current_symbol: string;
-  current_strategy: string;
 };
 
 class App extends React.Component<{}, State> {
   state: State = {
-    public_url: undefined,
+    public_url: "",
     symbols: [],
-    strategies: [],
-    price_ticks: [],
-    balance_ticks: [],
+    price_records: [],
+    balance_records: [],
 
     current_symbol: "",
-    current_strategy: "",
   };
 
   componentDidMount(): void {
-    getPublicUrlFromAws((public_url?: string) =>
-      this.onGetPublicUrlFromAws(public_url)
-    );
-    // this.onGetPublicUrlFromAws("http://localhost:6507");
+    // getPublicUrlFromAws((public_url?: string) =>
+    //   this.onGetPublicUrlFromAws(public_url)
+    // );
+    this.onGetPublicUrlFromAws("http://localhost");
   }
 
-  onGetPublicUrlFromAws(public_url?: string): void {
+  onGetPublicUrlFromAws(public_url: string): void {
     this.setState({ public_url: public_url }, () => {
-      fetch(this.state.public_url + "/Info/GetSymbols")
+      fetch(this.state.public_url + "/symbol_price_streams/GetStreamedSymbols")
         .then((response: Response) => response.json())
         .then(
           (json: any) => this.setState({ symbols: json }),
-          (error: any) => console.error(error)
-        );
-
-      fetch(this.state.public_url + "/Info/GetStrategyNames")
-        .then((response: Response) => response.json())
-        .then(
-          (json: any) => this.setState({ strategies: json }),
           (error: any) => console.error(error)
         );
     });
   }
 
   onSymbolSelected(symbol: string): void {
-    fetch(this.state.public_url + '/Info/GetPriceTicks?symbol="' + symbol + '"')
-      .then((response: Response) => response.json())
-      .then(
-        (json: any) =>
-          this.setState({ current_symbol: symbol, price_ticks: json }),
-        (error: any) => console.error(error)
-      );
-  }
+    this.setState({ current_symbol: symbol });
 
-  onStrategySelected(strategy: string): void {
-    this.setState({ current_strategy: strategy });
-  }
-
-  isRunEnabled(): boolean {
-    return (
-      this.state.current_strategy.length > 0 &&
-      this.state.current_symbol.length > 0
-    );
-  }
-
-  onRunClicked(): void {
     fetch(
-      this.state.public_url + "/" +
-        this.state.current_strategy +
-        '/Run?symbol="' +
-        this.state.current_symbol +
-        '"'
+      this.state.public_url +
+        "/symbols_db/SelectSymbolPriceRecords?limit=100&symbol=" +
+        symbol
     )
       .then((response: Response) => response.json())
       .then(
-        (json: any) => this.setState({ balance_ticks: json }),
+        (json: any) => this.setState({ price_records: json }),
         (error: any) => console.error(error)
       );
+  }
+
+  isRunEnabled(): boolean {
+    return this.state.current_symbol.length > 0;
+  }
+
+  onRunClicked(): void {
+    this.setState({ price_records: [] });
   }
 
   render(): JSX.Element {
@@ -108,21 +84,7 @@ class App extends React.Component<{}, State> {
                   value: item,
                 }))}
                 placeholder="Symbol"
-                // defaultValue={0}
                 onChange={(value: string) => this.onSymbolSelected(value)}
-              />
-            </Col>
-            <Col span={1} />
-            <Col span={4}>
-              <Select
-                showSearch
-                style={{ width: "100%" }}
-                options={this.state.strategies.map((item: string) => ({
-                  label: item,
-                  value: item,
-                }))}
-                placeholder="Strategy"
-                onChange={(value: string) => this.onStrategySelected(value)}
               />
             </Col>
             <Col span={1} />
@@ -139,8 +101,8 @@ class App extends React.Component<{}, State> {
         </Header>
         <Content>
           <MainChart
-            price_ticks={this.state.price_ticks}
-            balance_ticks={this.state.balance_ticks}
+            price_records={this.state.price_records}
+            balance_records={this.state.balance_records}
           />
         </Content>
         <Footer>
