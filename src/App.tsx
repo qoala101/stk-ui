@@ -1,79 +1,125 @@
 import * as React from "react";
 
-import { Layout, Select, Row, Col, Button } from "antd";
-import { Header, Content, Footer } from "antd/lib/layout/layout";
+import { Button, Col, Layout, Row, Select } from "antd";
+import "antd/dist/reset.css";
+import { Content, Footer, Header } from "antd/lib/layout/layout";
+
+import queryString from "query-string";
 
 import getPublicUrlFromAws from "./aws/Aws";
-import { PriceRecord } from "./Types";
-import { BalanceRecord } from "./Types";
+import { SymbolPriceRecord } from "./Types";
 import MainChart from "./charts/MainChart";
 
-import "antd/dist/antd.dark.min.css";
-
 type State = {
-  public_url: string;
-  symbols: string[];
-  price_records: PriceRecord[];
-  balance_records: BalanceRecord[];
-
-  current_symbol: string;
+  app_uri: string;
+  symbols: Array<string>;
+  price_records: Array<SymbolPriceRecord>;
 };
 
 class App extends React.Component<{}, State> {
   state: State = {
-    public_url: "",
+    app_uri: "",
     symbols: [],
     price_records: [],
-    balance_records: [],
-
-    current_symbol: "",
   };
 
-  componentDidMount(): void {
-    // getPublicUrlFromAws((public_url?: string) =>
-    //   this.onGetPublicUrlFromAws(public_url)
+  update_interval_ms: number = 1000;
+  update_timer!: NodeJS.Timer;
+
+  componentDidMount() {
+    // getAppUriFromAws((app_uri?: string) =>
+    //   this.onGetAppUriFromAws(app_uri)
     // );
-    this.onGetPublicUrlFromAws("http://localhost");
+    this.setAppUri("http://0.0.0.0");
   }
 
-  onGetPublicUrlFromAws(public_url: string): void {
-    this.setState({ public_url: public_url }, () => {
-      fetch(this.state.public_url + "/symbol_price_streams/GetStreamedSymbols")
-        .then((response: Response) => response.json())
-        .then(
-          (json: any) => this.setState({ symbols: json }),
-          (error: any) => console.error(error)
-        );
-    });
+  componentWillUnmount() {
+    clearInterval(this.update_timer);
   }
 
-  onSymbolSelected(symbol: string): void {
-    this.setState({ current_symbol: symbol });
+  onGetAppUriFromAws(app_uri?: string) {
+    if (app_uri === undefined) {
+      console.error("Couldn't get app URI");
+      return;
+    }
 
-    fetch(
-      this.state.public_url +
-        "/symbols_db/SelectSymbolPriceRecords?limit=100&symbol=" +
-        symbol
-    )
-      .then((response: Response) => response.json())
+    this.setAppUri(app_uri);
+  }
+
+  setAppUri(app_uri: string) {
+    this.setState({ app_uri: app_uri }, () => this.onAppUriSet());
+  }
+
+  onAppUriSet() {
+    fetch(this.state.app_uri + "/symbols_db/SelectSymbolsWithPriceRecords")
       .then(
-        (json: any) => this.setState({ price_records: json }),
-        (error: any) => console.error(error)
+        (response) => response.json(),
+        (error) => console.error(error)
+      )
+      .then(
+        (json) => this.setSymbols(json),
+        (error) => console.error(error)
       );
   }
 
-  isRunEnabled(): boolean {
-    return this.state.current_symbol.length > 0;
+  setSymbols(symbols: Array<string>) {
+    this.setState({ symbols: symbols }, () => this.fetchNewPriceRecords());
   }
 
-  onRunClicked(): void {
-    this.setState({ price_records: [] });
+  fetchNewPriceRecords() {
+    let start_time = undefined;
+
+    if (this.state.price_records.length > 0) {
+      start_time =
+        this.state.price_records[this.state.price_records.length - 1].time;
+    }
+
+    fetch(
+      this.state.app_uri +
+        "/symbols_db/SelectSymbolPriceRecords?" +
+        queryString.stringify({
+          symbol: this.state.symbols[0],
+          order: "kOldFirst",
+          start_time: start_time,
+          limit: 100,
+        })
+    )
+      .then(
+        (response) => response.json(),
+        (error) => console.error(error)
+      )
+      .then(
+        (json) => this.appendNewPriceRecords(json),
+        (error) => console.error(error)
+      );
   }
 
-  render(): JSX.Element {
+  appendNewPriceRecords(new_price_records: Array<SymbolPriceRecord>) {
+    this.setState(
+      {
+        price_records: this.state.price_records.concat(new_price_records),
+      },
+      () => this.onNewPriceRecordsAppended()
+    );
+  }
+
+  onNewPriceRecordsAppended() {
+    this.update_timer = setInterval(() => {
+      clearInterval(this.update_timer);
+      this.fetchNewPriceRecords();
+    }, this.update_interval_ms);
+  }
+
+  onRunClicked() {}
+
+  render() {
     return (
       <Layout>
-        <Header>
+        <Header></Header>
+        <Content>
+          <MainChart price_records={this.state.price_records} />
+        </Content>
+        <Footer>
           <Row justify="start">
             <Col span={4}>
               <Select
@@ -84,35 +130,15 @@ class App extends React.Component<{}, State> {
                   value: item,
                 }))}
                 placeholder="Symbol"
-                onChange={(value: string) => this.onSymbolSelected(value)}
               />
             </Col>
             <Col span={1} />
             <Col span={4}>
-              <Button
-                type="primary"
-                disabled={!this.isRunEnabled()}
-                onClick={() => this.onRunClicked()}
-              >
+              <Button type="primary" onClick={() => this.onRunClicked()}>
                 Run
               </Button>
             </Col>
           </Row>
-        </Header>
-        <Content>
-          <MainChart
-            price_records={this.state.price_records}
-            balance_records={this.state.balance_records}
-          />
-        </Content>
-        <Footer>
-          <Button
-            type="primary"
-            disabled={!this.isRunEnabled()}
-            onClick={() => this.onRunClicked()}
-          >
-            Run
-          </Button>
         </Footer>
       </Layout>
     );

@@ -8,21 +8,21 @@ function getPublicUrlFromAws(handler: (public_url?: string) => void) {
     }),
   });
 
-  var dynamoDb = new Aws.DynamoDB();
-  var getItemParams = {
+  let dynamoDb = new Aws.DynamoDB();
+  let getItemParams = {
     Key: {
       Key: {
         S: "public_url",
       },
     },
-    TableName: "stonks",
+    TableName: "stk",
   };
 
   dynamoDb.getItem(
     getItemParams,
     function (err: Aws.AWSError, data: Aws.DynamoDB.Types.GetItemOutput) {
       if (data.Item) {
-        var item = data.Item["Value"];
+        let item = data.Item["Value"];
 
         if (item.S) {
           handler(item.S);

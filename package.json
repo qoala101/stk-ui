@@ -1,28 +1,30 @@
 {
-  "name": "stonks_ui",
+  "name": "stk_ui",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@ant-design/icons": "latest",
     "@emotion/react": "latest",
     "@emotion/styled": "latest",
-    "@mui/material": "latest",
     "@mui/icons-material": "latest",
+    "@mui/material": "latest",
     "@types/jest": "latest",
     "@types/node": "latest",
     "@types/react": "latest",
     "@types/react-dom": "latest",
+    "antd": "latest",
     "aws-sdk": "latest",
     "gh-pages": "latest",
     "highcharts": "latest",
     "highcharts-react-official": "latest",
+    "package.json": "latest",
+    "query-string": "latest",
     "react": "latest",
     "react-dom": "latest",
     "react-scripts": "latest",
     "typescript": "latest",
-    "web-vitals": "latest",
     "util": "latest",
-    "@ant-design/icons": "latest",
-    "antd": "latest"
+    "web-vitals": "latest"
   },
   "scripts": {
     "predeploy": "npm run build",
@@ -49,5 +51,5 @@
       "last 1 safari version"
     ]
   },
-  "homepage": "https://qoala101.github.io/stonks_ui"
+  "homepage": "https://qoala101.github.io/stk_ui"
 }

@@ -4,19 +4,60 @@ import Highcharts from "highcharts/highstock";
 import HighchartsReact from "highcharts-react-official";
 import Theme from "highcharts/themes/dark-green";
 
-import { PriceRecord } from "../Types";
-import { BalanceRecord } from "../Types";
+import { SymbolPriceRecord } from "../Types";
 
 Theme(Highcharts);
 
 type Props = {
-  price_records: PriceRecord[];
-  balance_records: BalanceRecord[];
+  price_records: Array<SymbolPriceRecord>;
 };
 
 class MainChart extends React.Component<Props> {
+  chart_ref?: HighchartsReact.RefObject;
+  update_interval_ms: number = 1000;
+  update_timer!: NodeJS.Timer;
+
+  componentDidMount() {
+    this.update_timer = setInterval(
+      () => this.onUpdate(),
+      this.update_interval_ms
+    );
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.update_timer);
+  }
+
+  shouldComponentUpdate(nextProps: Props) {
+    return false;
+  }
+
+  onUpdate() {
+    this.chart_ref?.chart.series[0].setData(
+      this.props.price_records.map((item: SymbolPriceRecord) => [
+        item.time,
+        item.buy_price,
+      ]),
+      false
+    );
+
+    this.chart_ref?.chart.series[1].setData(
+      this.props.price_records.map((item: SymbolPriceRecord) => [
+        item.time,
+        item.sell_price,
+      ]),
+      false
+    );
+
+    this.chart_ref?.chart.redraw();
+  }
+
   render() {
     let options: Highcharts.Options = {
+      credits: {
+        enabled: false,
+      },
+
       exporting: {
         enabled: false,
       },
@@ -62,36 +103,10 @@ class MainChart extends React.Component<Props> {
         {
           type: "line",
           name: "Buy Price",
-          data: this.props.price_records.map((item: PriceRecord) => [
-            item.time,
-            item.buy_price,
-          ]),
         },
         {
           type: "line",
           name: "Sell Price",
-          data: this.props.price_records.map((item: PriceRecord) => [
-            item.time,
-            item.sell_price,
-          ]),
-        },
-        {
-          type: "line",
-          name: "Base Balance",
-          data: this.props.balance_records.map((item: BalanceRecord) => [
-            item.time,
-            0,
-          ]),
-          yAxis: 1,
-        },
-        {
-          type: "line",
-          name: "Quote Balance",
-          data: this.props.balance_records.map((item: BalanceRecord) => [
-            item.time,
-            item.quote_balance,
-          ]),
-          yAxis: 1,
         },
       ],
     };
@@ -102,6 +117,9 @@ class MainChart extends React.Component<Props> {
           highcharts={Highcharts}
           constructorType={"stockChart"}
           options={options}
+          ref={(chart_ref: HighchartsReact.RefObject) =>
+            (this.chart_ref = chart_ref)
+          }
         />
       </div>
     );
