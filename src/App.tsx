@@ -1,3 +1,9 @@
+/**
+ * STK-UI {@link https://github.com/qoala101/stk_ui}
+ * @author Volodymyr Hromakov <4y5t6r@gmail.com>
+ * @copyright Copyright (c) 2023, MIT License
+ */
+
 import * as React from "react";
 
 import { Button, Col, Layout, Row, Select } from "antd";
@@ -27,10 +33,7 @@ class App extends React.Component<{}, State> {
   update_timer!: NodeJS.Timer;
 
   componentDidMount() {
-    // getAppUriFromAws((app_uri?: string) =>
-    //   this.onGetAppUriFromAws(app_uri)
-    // );
-    this.setAppUri("http://0.0.0.0");
+    getPublicUrlFromAws((app_uri?: string) => this.onGetAppUriFromAws(app_uri));
   }
 
   componentWillUnmount() {
